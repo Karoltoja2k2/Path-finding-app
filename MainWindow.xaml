@@ -1,0 +1,15 @@
+﻿<Window x:Class="Path_finding.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Path_finding"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <StackPanel Orientation="Vertical">
+        <Button Click="Dijkstra_Alg" Content="Visualise Dijkstra algorithm" Width="200"/>
+        <Grid Name="grid">
+
+        </Grid>
+    </StackPanel>
+</Window>
