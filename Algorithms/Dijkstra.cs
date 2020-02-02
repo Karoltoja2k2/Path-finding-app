@@ -4,15 +4,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Media;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace Path_finding.Algorithms
 {
     public class Dijkstra
     {
-        public Field[,] fieldArray { get; set; }
+        List<Field> fieldList;
+        Button[,] btnArray;
         public Field startField;
         public bool finishFound = false;
+
+        public Field pathTrack;
+        public bool run;
+
+        public Queue<Button> btnGreen = new Queue<Button>();
 
         public Point[] offset = new Point[] {
                                                   new Point(-1, 0),
@@ -20,54 +29,52 @@ namespace Path_finding.Algorithms
                                                   new Point(1, 0)
                                 };
 
-        public Dijkstra(Field[,] fieldArray, Field startField)
+        public Dijkstra(List<Field> fieldList, Button[,] btnArray)
         {
-            this.fieldArray = fieldArray;
-            this.startField = startField;
-
-            First_Move();
+            this.fieldList = fieldList;
+            this.btnArray = btnArray;
         }
 
-        public void First_Move()
+        public void Move()
         {
-            Point startPoint = startField.point;
-
-            startField.visited = true;
-
-            foreach (Point offPoint in offset)
+            run = true;
+            do
             {
-                Point tempPoint = startPoint.Add_Point(offPoint);
-                if (tempPoint.Inside_Boundries(16, 30))
-                    Move(tempPoint, startField);
-            }
+                Field threadedField = fieldList.OrderBy(p => p.distance).First();
+                fieldList.Remove(threadedField);
+
+                if (threadedField.distance == int.MaxValue) break;
+
+                if (!threadedField.wall)
+                {
+                    foreach (Edge edge in threadedField.edges)
+                    {
+                        Field nextField = edge.nextField;
+
+                        if (!nextField.wall && !nextField.visited)
+                        {
+                            if (edge.distance + threadedField.distance < nextField.distance)
+                            {
+                                nextField.distance = threadedField.distance + edge.distance;
+                                nextField.visited = true;
+                                btnGreen.Enqueue(btnArray[nextField.point.row, nextField.point.col]);
+                                nextField.prevField = threadedField;
+                            }
+                            if (nextField.finish)
+                            {
+                                pathTrack = nextField;
+                                break;
+                            }
+                        }                        
+                    }
+                    if (fieldList.Count == 0 || pathTrack != null)
+                    {
+                        run = false;
+                    }
+                }
+            } while (run);
+
         }
 
-        public void Move(Point moveTo, Field prevField)
-        {
-            if (!finishFound)
-            {
-                Field movedTo = fieldArray[moveTo.row, moveTo.col];
-                if (movedTo.visited)
-                {
-                    return;
-                }
-                if (movedTo.finish)
-                {
-                    finishFound = true;
-                }
-
-                movedTo.visited = true;
-                movedTo.distance += prevField.distance + 1;
-                movedTo.prevField = prevField;
-                movedTo.btn.Background = Brushes.Green;
-
-                foreach (Point offPoint in offset)
-                {
-                    Point tempPoint = movedTo.point.Add_Point(offPoint);
-                    if (tempPoint.Inside_Boundries(16, 30))
-                        Move(tempPoint, movedTo);
-                }
-            }
-        }
     }
 }
