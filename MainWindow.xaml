@@ -5,10 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Path_finding"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        ResizeMode="CanMinimize"
+        Title="MainWindow" Height="720" Width="1280">
     <StackPanel Orientation="Vertical">
-        <Button Click="Dijkstra_Alg" Content="Visualise Dijkstra algorithm" Width="200"/>
-        <Grid Name="grid">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Name="dijkstraButton" Click="Dijkstra_Alg" Content="Visualise Dijkstra algorithm" Width="200" Margin="5"/>
+            <Slider Minimum="1" Maximum="100" Name="speedSlider" Width="200" Margin="5" ValueChanged="Slider_ValueChanged"/>
+        </StackPanel>
+        <Grid HorizontalAlignment="Center" Name="grid" Height="Auto" Width="Auto">
 
         </Grid>
     </StackPanel>

@@ -29,6 +29,12 @@ namespace Path_finding
         public Field[,] fieldArrayToPass;
         public Dijkstra alg;
         public int visSpeed = 5;
+
+        public int vSpeed { get => this.visSpeed; set => this.visSpeed = value; }
+
+        public Thread thr;
+        public Thread thr2;
+
         public bool vis;
 
         public Support.Point startPoint = new Support.Point(25,20);
@@ -47,8 +53,8 @@ namespace Path_finding
         public MainWindow()
         {
             InitializeComponent();
-            rows = 30;
-            columns = 60;
+            rows = 25;
+            columns = 50;
             Create_Grid(rows, columns);
         }
 
@@ -75,8 +81,8 @@ namespace Path_finding
 
                     Button btn = new Button();
                     btn.CommandParameter = pnt;
-                    btn.Height = 15;
-                    btn.Width = 15;
+                    btn.Height = 25;
+                    btn.Width = 25;
                     btn.Background = Brushes.White;
                     btn.PreviewMouseLeftButtonDown += LMB_Down;
                     btn.PreviewMouseLeftButtonUp += LMB_Up;
@@ -107,6 +113,7 @@ namespace Path_finding
         public void Set_Start(int row, int col)
         {
             fieldArray[row, col].start = true;
+            fieldArray[row, col].wall = false;
             fieldArray[row, col].distance = 0;
             startPoint = new Support.Point(row, col);
 
@@ -120,8 +127,9 @@ namespace Path_finding
         public void Set_Finish(int row, int col)
         {
             fieldArray[row, col].finish = true;
-            finishPoint = new Support.Point(row, col);
+            fieldArray[row, col].wall = false;
             fieldArray[row, col].distance = int.MaxValue;
+            finishPoint = new Support.Point(row, col);
 
             Button threadedBtn = btnArray[row, col];
             threadedBtn.MouseEnter -= Put_Wall;
@@ -227,6 +235,14 @@ namespace Path_finding
         {
             foreach (Field field in fieldArray)
             {
+                if (thr != null)
+                    if (thr.IsAlive)
+                        thr.Abort();
+
+                if (thr2 != null)
+                    if (thr2.IsAlive)
+                        thr2.Abort();
+
                 field.visited = false;
                 field.distance = field.point.Is_Equal_To(startPoint) ? 0 : int.MaxValue;
                 if (!field.start && !field.finish)
@@ -237,6 +253,8 @@ namespace Path_finding
 
         public void Dijkstra_Alg(object sender, RoutedEventArgs e)
         {
+            dijkstraButton.IsEnabled = false;
+
             Clear();
             List<Field> fieldList = new List<Field>();
             foreach (Field field in fieldArray)
@@ -288,6 +306,7 @@ namespace Path_finding
                 {
                     Thread.Sleep(100);
                     vis = false;
+                    Dispatcher.Invoke(new Action(() => dijkstraButton.IsEnabled = true));
                     if (alg.pathTrack != null)
                     {
                         Dispatcher.Invoke(new Action<Field>((pT) => Show_Path(pT)), alg.pathTrack);
@@ -301,13 +320,21 @@ namespace Path_finding
         {
             try
             {
-                Button btn = alg.btnGreen.Dequeue();
-                btn.Background = Brushes.Green;
+                if (alg.btnGreen.Count != 0)
+                {
+                    Button btn = alg.btnGreen.Dequeue();
+                    btn.Background = Brushes.Green;
+                }
             }
-            catch(InvalidOperationException)
+            catch(Exception)
             {
                 return;
             }
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            this.visSpeed = (int)speedSlider.Value;
         }
     }
 }

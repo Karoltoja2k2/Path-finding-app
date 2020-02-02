@@ -43,7 +43,16 @@ namespace Path_finding.Algorithms
                 Field threadedField = fieldList.OrderBy(p => p.distance).First();
                 fieldList.Remove(threadedField);
 
-                if (threadedField.distance == int.MaxValue) break;
+                if (threadedField.distance == int.MaxValue)
+                {
+                    if (fieldList.Count > 0)
+                        continue;
+                    else
+                        pathTrack = null;
+                        run = false;
+                        break;
+                        
+                }
 
                 if (!threadedField.wall)
                 {
