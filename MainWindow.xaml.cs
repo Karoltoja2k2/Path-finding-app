@@ -30,8 +30,6 @@ namespace Path_finding
         public Dijkstra alg;
         public int visSpeed = 5;
 
-        public int vSpeed { get => this.visSpeed; set => this.visSpeed = value; }
-
         public Thread thr;
         public Thread thr2;
 
@@ -44,6 +42,8 @@ namespace Path_finding
 
         public int rows;
         public int columns;
+        public int size;
+        public int chosenAlg = 1;
 
         public bool mouseDown = false;
         public bool movingStart = false; 
@@ -53,15 +53,19 @@ namespace Path_finding
         public MainWindow()
         {
             InitializeComponent();
-            rows = 25;
-            columns = 50;
-            Create_Grid(rows, columns);
+            rows = 10;
+            columns = 20;
+            Loaded += Create_Grid;
         }
 
-        public void Create_Grid(int rows, int cols)
+        #region Grid and board change methods
+
+        public void Create_Grid(object sender = null, RoutedEventArgs e = null)
         {
-            fieldArray = new Field[rows, cols];
-            btnArray = new Button[rows, cols];
+            fieldArray = new Field[rows, columns];
+            btnArray = new Button[rows, columns];
+            var style = (Style)App.Current.TryFindResource("fieldButton");
+
 
             grid.Children.Clear();
             for (int i = 0; i < rows; i++)
@@ -71,7 +75,7 @@ namespace Path_finding
                 grid.RowDefinitions.Add(row);
 
 
-                for (int j = 0; j < cols; j++)
+                for (int j = 0; j < columns; j++)
                 {
                     ColumnDefinition col = new ColumnDefinition();
                     col.Width = GridLength.Auto;
@@ -81,8 +85,9 @@ namespace Path_finding
 
                     Button btn = new Button();
                     btn.CommandParameter = pnt;
-                    btn.Height = 25;
-                    btn.Width = 25;
+                    btn.Height = 1260 / columns;
+                    btn.Width = 1260 / columns;
+                    btn.Style = style;
                     btn.Background = Brushes.White;
                     btn.PreviewMouseLeftButtonDown += LMB_Down;
                     btn.PreviewMouseLeftButtonUp += LMB_Up;
@@ -100,12 +105,12 @@ namespace Path_finding
 
             foreach (Field field in fieldArray)
             {
-                field.Add_Edges(rows, columns, fieldArray);
+                field.Add_Edges(rows, this.columns, fieldArray);
                 field.distance = int.MaxValue;                  
 
             }
             Set_Start(0, 0);
-            Set_Finish(rows - 1, cols - 1);
+            Set_Finish(rows - 1, columns - 1);
         }
 
 
@@ -170,7 +175,6 @@ namespace Path_finding
 
         public void Move_Point(Support.Point pnt)
         {
-
             if (movingStart)
             {
                 Set_Empty(startPoint.row, startPoint.col);
@@ -181,10 +185,7 @@ namespace Path_finding
                 Set_Empty(finishPoint.row, finishPoint.col);
                 Set_Finish(pnt.row, pnt.col);
             }
-
             movingStart = movingFinish = false;
-
-
         }
 
         public void LMB_Down(object sender, MouseButtonEventArgs e)
@@ -231,30 +232,23 @@ namespace Path_finding
             }
         }
 
-        public void Clear()
+        #endregion
+
+        // Algorithms
+
+        public void a_Star_Alg()
         {
+            Clear();
             foreach (Field field in fieldArray)
             {
-                if (thr != null)
-                    if (thr.IsAlive)
-                        thr.Abort();
-
-                if (thr2 != null)
-                    if (thr2.IsAlive)
-                        thr2.Abort();
-
-                field.visited = false;
-                field.distance = field.point.Is_Equal_To(startPoint) ? 0 : int.MaxValue;
-                if (!field.start && !field.finish)
-                    btnArray[field.point.row, field.point.col].Background = field.wall ? Brushes.Black : Brushes.White;
 
             }
+
         }
 
-        public void Dijkstra_Alg(object sender, RoutedEventArgs e)
+        public void Dijkstra_Alg()
         {
-            dijkstraButton.IsEnabled = false;
-
+            Buttons_Change_State(true); ;
             Clear();
             List<Field> fieldList = new List<Field>();
             foreach (Field field in fieldArray)
@@ -272,8 +266,42 @@ namespace Path_finding
             vis = true;
             Thread thr = new Thread(Visualisation_Proccess);
             thr.Start();
+        }
 
+        // Viusalisation methods
 
+        private void Start_Vis(object sender, RoutedEventArgs e)
+        {
+            switch (chosenAlg)
+            {
+                case 1:
+                    Dijkstra_Alg();
+                    break;
+                case 2:
+                    a_Star_Alg();
+                    break;
+            }
+        }
+
+        private void Stop_Vis(object sender, RoutedEventArgs e)
+        {
+            vis = false;
+        }
+
+        public void Clear()
+        {
+            foreach (Field field in fieldArray)
+            {
+                if (thr != null)
+                    if (thr.IsAlive)
+                        thr.Abort();
+
+                if (thr2 != null)
+                    if (thr2.IsAlive)
+                        thr2.Abort();
+
+                field.Reset();
+            }
         }
 
         public void Show_Path(Field pathTrack)
@@ -306,7 +334,6 @@ namespace Path_finding
                 {
                     Thread.Sleep(100);
                     vis = false;
-                    Dispatcher.Invoke(new Action(() => dijkstraButton.IsEnabled = true));
                     if (alg.pathTrack != null)
                     {
                         Dispatcher.Invoke(new Action<Field>((pT) => Show_Path(pT)), alg.pathTrack);
@@ -314,6 +341,7 @@ namespace Path_finding
                 }
                 Thread.Sleep(visSpeed);
             }
+            Dispatcher.Invoke(new Action(() => Buttons_Change_State()));
         }
 
         public void Show_Visited_Field()
@@ -332,9 +360,133 @@ namespace Path_finding
             }
         }
 
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+
+
+        private void changeLevel(object sender, RoutedEventArgs e)
+        {
+            if (grid != null)
+            {
+                Button btn = (Button)sender;
+                int newSize;
+                int.TryParse((string)btn.CommandParameter, out newSize);
+                if (newSize != size)
+                {
+                    size = newSize;
+                    switch (newSize)
+                    {
+                        case 1:
+                            rows = 10;
+                            columns = 20;
+                            break;
+                        case 2:
+                            rows = 25;
+                            columns = 50;
+                            break;
+                        case 3:
+                            rows = 50;
+                            columns = 100;
+                            break;
+                    }
+                    Create_Grid();
+                }
+            }
+        }
+
+
+
+        private void Random_Maze(object sender, RoutedEventArgs e)
+        {
+            var rand = new Random();
+            foreach(Field field in fieldArray)
+            {
+                if (field.start == false && field.finish == false)
+                {
+                    if (rand.Next(0, 100) > 70)
+                    {
+                        field.wall = true;
+                        btnArray[field.point.row, field.point.col].Background = Brushes.Black;
+                    }
+                    else
+                    {
+                        field.wall = false;
+                        btnArray[field.point.row, field.point.col].Background = Brushes.White;
+                    }    
+                }
+            }
+        }
+
+        public void Change_Alg(object sender, RoutedEventArgs e)
+        {
+            Button btn = (Button)sender;
+            int newAlg;
+            int.TryParse((string)btn.CommandParameter, out newAlg);
+            chosenAlg = newAlg != chosenAlg ? newAlg : chosenAlg;
+        }
+
+
+
+        // ASDASD
+
+        public void Buttons_Change_State(bool start = false)
+        {
+            if (start)
+            {
+                startBtn.Content = "Stop";
+                startBtn.Background = new SolidColorBrush(Color.FromRgb(185, 15, 15));
+                startBtn.Click -= Start_Vis;
+                startBtn.Click += Stop_Vis;
+            }
+            else
+            {
+                startBtn.Content = "Visualise";
+                startBtn.Background = new SolidColorBrush(Color.FromRgb(72, 201, 176));
+                startBtn.Click += Start_Vis;
+                startBtn.Click -= Stop_Vis;
+            }
+
+            dijkstraButton.IsEnabled = !dijkstraButton.IsEnabled;
+            aStartButton.IsEnabled = !aStartButton.IsEnabled;
+            randomMazeBtn.IsEnabled = !randomMazeBtn.IsEnabled;
+            size1Btn.IsEnabled = !size1Btn.IsEnabled;
+            size2Btn.IsEnabled = !size2Btn.IsEnabled;
+            size3Btn.IsEnabled = !size3Btn.IsEnabled;
+        }
+
+        private void SpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             this.visSpeed = (int)speedSlider.Value;
+        }
+
+        private void grid_MouseLeave(object sender, MouseEventArgs e)
+        {
+            mouseDown = movingFinish = movingStart = false;
+        }
+
+        private void mouseOutExpander(object sender, MouseEventArgs e)
+        {
+            Expander exp = (Expander)sender;
+            exp.IsExpanded = false;
+        }
+
+        private void mouseInExpander(object sender, MouseEventArgs e)
+        {
+            Expander exp = (Expander)sender;
+            exp.IsExpanded = true;
+        }
+
+        private void Close_Game_Window(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Minimize_Game_Window(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void Drag_Window(object sender, MouseButtonEventArgs e)
+        {
+            this.DragMove();
         }
     }
 }

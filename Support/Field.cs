@@ -18,6 +18,8 @@ namespace Path_finding
         public int distance { get; set; }
         public Field prevField { get; set; }
 
+        public double fDistance;
+
         public Button btn;
 
         public Point[] offset = new Point[] {
@@ -34,14 +36,13 @@ namespace Path_finding
         public Field(int row, int col)
         {
             this.point = new Point(row, col);
-            this.distance = 0;
         }
 
         public void Reset()
         {
-            distance = start ? 0 : int.MaxValue;
             prevField = null;
             visited = false;
+            distance = 0;
         }
 
         public void Add_Edges(int rows, int cols, Field[,] fieldArray)

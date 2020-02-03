@@ -4,6 +4,76 @@
              xmlns:local="clr-namespace:Path_finding"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        
+        <Style x:Key="fieldButton" TargetType="{x:Type Button}">
+            <Style.Setters>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="button" Margin="0" CornerRadius="0" BorderBrush="Black" BorderThickness="0.2" Background="{TemplateBinding Background}">
+                                <TextBlock FontWeight="DemiBold" FontFamily="Roboto" Text="{TemplateBinding Button.Content}" Margin="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style.Setters>
+        </Style>
+
+        <Style TargetType="{x:Type Button}">
+            <Style.Setters>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="button" Margin="0" CornerRadius="2" BorderBrush="Black" BorderThickness="0.2" Background="{TemplateBinding Background}">
+                                <TextBlock FontWeight="DemiBold" FontFamily="Roboto" Text="{TemplateBinding Button.Content}" Margin="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="menuButton" TargetType="{x:Type Button}">
+            <Style.Setters>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="button" Margin="0" CornerRadius="2" BorderBrush="Black" BorderThickness="0" Background="Transparent">
+                                <TextBlock FontWeight="DemiBold" FontSize="16" HorizontalAlignment="Left" Foreground="White" FontFamily="Roboto" Text="{TemplateBinding Button.Content}" Margin="5,2" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="button" Property="Background" Value="#1abc9c" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="titleBarButton" TargetType="{x:Type Button}">
+            <Style.Setters>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="button" Margin="0" CornerRadius="2" BorderBrush="Black" BorderThickness="0" Background="{TemplateBinding Background}">
+                                <TextBlock FontWeight="DemiBold" FontFamily="Roboto" Text="{TemplateBinding Button.Content}" Margin="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="button"  Property="Background" Value="LightGray"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="button" Property="Background" Value="Red" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style.Setters>
+        </Style>
+
     </Application.Resources>
 </Application>

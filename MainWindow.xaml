@@ -5,14 +5,53 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Path_finding"
         mc:Ignorable="d"
+        WindowStyle="None"
         ResizeMode="CanMinimize"
+        FontFamily="Roboto"
+        FontSize="18"
         Title="MainWindow" Height="720" Width="1280">
     <StackPanel Orientation="Vertical">
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Name="dijkstraButton" Click="Dijkstra_Alg" Content="Visualise Dijkstra algorithm" Width="200" Margin="5"/>
-            <Slider Minimum="1" Maximum="100" Name="speedSlider" Width="200" Margin="5" ValueChanged="Slider_ValueChanged"/>
-        </StackPanel>
-        <Grid HorizontalAlignment="Center" Name="grid" Height="Auto" Width="Auto">
+        <DockPanel Height="50" HorizontalAlignment="Stretch" Panel.ZIndex="1"  Background="#34495e" MouseLeftButtonDown="Drag_Window" LastChildFill="False" Name="titleBar">
+            
+
+
+            <Button Content="Visualise!" Name="startBtn" Background="#1abc9c" Width="100" Margin="5,5,50,5" Click="Start_Vis"/>
+
+            <Canvas Width="{Binding ActualWidth, ElementName=Expander}" Height="20" Margin="0,2,50,2" >
+                <Expander Header="Algorithm" x:Name="Expander" Foreground="White" Background="#34495e" Width="150" IsExpanded="False" MouseEnter="mouseInExpander" MouseLeave="mouseOutExpander">
+                    <StackPanel>
+                        <Button Name="dijkstraButton" HorizontalContentAlignment="Left" Click="Change_Alg" CommandParameter="1" Style="{DynamicResource menuButton}" Content="Dijkstra" Margin="2"/>
+                        <Button Name="aStartButton" Click="Change_Alg" CommandParameter="2" Style="{DynamicResource menuButton}" Content="A*" Margin="2"/>
+                    </StackPanel>
+                </Expander>
+            </Canvas>
+            
+            <Canvas Width="{Binding ActualWidth, ElementName=Expander}" Height="20" Margin="0,2,50,2">
+                <Expander Header="Grid size" x:Name="sizeExpander" Foreground="White" Background="#34495e" Width="150" IsExpanded="False" MouseEnter="mouseInExpander" MouseLeave="mouseOutExpander">
+                    <StackPanel>
+                        <Button Click="changeLevel" Background="Transparent" CommandParameter="1" Style="{DynamicResource menuButton}" Name="size1Btn" Margin="2" Content="Small"/>
+                        <Button Click="changeLevel" CommandParameter="2" Style="{DynamicResource menuButton}" Name="size2Btn" Margin="2" Content="Medium"/>
+                        <Button Click="changeLevel" CommandParameter="3" Style="{DynamicResource menuButton}" Name="size3Btn" Margin="2" Content="Huge"/>
+                    </StackPanel>
+                </Expander>
+            </Canvas>
+
+            <Canvas Width="{Binding ActualWidth, ElementName=Expander}" Height="20" Margin="0,2,50,2">
+                <Expander Header="Maze" x:Name="randomizerExpander" Foreground="White" Background="#34495e" Width="150" IsExpanded="False" MouseEnter="mouseInExpander" MouseLeave="mouseOutExpander">
+                    <StackPanel>
+                        <Button Content="Random maze" Name="randomMazeBtn" Click="Random_Maze" Style="{DynamicResource menuButton}" Margin="2"/>
+
+                    </StackPanel>
+                </Expander>
+            </Canvas>
+            
+            <Slider Minimum="1" Maximum="100" Name="speedSlider" Width="100" Height="20" Margin="0,2,50,2" ValueChanged="SpeedSlider_ValueChanged"/>
+            <Button Style="{DynamicResource titleBarButton}" Background="Transparent" BorderThickness="0" FontSize="35" Height="40" Width="30" Foreground="White"  Click="Close_Game_Window" DockPanel.Dock="Right" Content="X" Margin="5,5" VerticalAlignment="Center"/>
+
+            <Button Style="{DynamicResource titleBarButton}" Background="Transparent" BorderThickness="0" FontSize="35" Height="40" Width="30" Foreground="White" Click="Minimize_Game_Window" DockPanel.Dock="Right" Content="_" Margin="5,5" VerticalAlignment="Center"/>
+        </DockPanel>
+        
+        <Grid HorizontalAlignment="Stretch" Name="grid" Height="650" Margin="10" Width="1260" MouseLeave="grid_MouseLeave">
 
         </Grid>
     </StackPanel>

@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Algorithms\AStar.cs" />
     <Compile Include="Support\Edge.cs" />
     <Compile Include="Support\Point.cs" />
     <Page Include="MainWindow.xaml">
