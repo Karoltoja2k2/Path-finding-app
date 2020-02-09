@@ -36,7 +36,15 @@ namespace Path_finding.Support
                 return true;
             else
                 return false;
+        }
 
+        public double Distance_To(Point p2)
+        {
+            int dy = Math.Abs(p2.row - row);
+            int dx = Math.Abs(p2.col - col);
+
+            double f = Math.Sqrt(Math.Pow(dy, 2) + Math.Pow(dx, 2));
+            return f;
         }
     }
 }

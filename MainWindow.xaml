@@ -21,7 +21,7 @@
                 <Expander Header="Algorithm" x:Name="Expander" Foreground="White" Background="#34495e" Width="150" IsExpanded="False" MouseEnter="mouseInExpander" MouseLeave="mouseOutExpander">
                     <StackPanel>
                         <Button Name="dijkstraButton" HorizontalContentAlignment="Left" Click="Change_Alg" CommandParameter="1" Style="{DynamicResource menuButton}" Content="Dijkstra" Margin="2"/>
-                        <Button Name="aStartButton" Click="Change_Alg" CommandParameter="2" Style="{DynamicResource menuButton}" Content="A*" Margin="2"/>
+                        <Button Name="BFSbutton" Click="Change_Alg" CommandParameter="2" Style="{DynamicResource menuButton}" Content="Best first search" Margin="2"/>
                     </StackPanel>
                 </Expander>
             </Canvas>

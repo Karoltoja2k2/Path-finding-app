@@ -27,23 +27,24 @@ namespace Path_finding
     {
         public static Field[,] fieldArray;
         public Field[,] fieldArrayToPass;
-        public Dijkstra alg;
         public int visSpeed = 5;
 
+        public bool run;
+
         public Thread thr;
-        public Thread thr2;
 
         public bool vis;
 
         public Support.Point startPoint = new Support.Point(25,20);
         public Support.Point finishPoint = new Support.Point(25, 80);
 
-        public static Button[,] btnArray;
+        public Button[,] btnArray;
 
         public int rows;
         public int columns;
         public int size;
         public int chosenAlg = 1;
+        public Random random = new Random();
 
         public bool mouseDown = false;
         public bool movingStart = false; 
@@ -175,15 +176,18 @@ namespace Path_finding
 
         public void Move_Point(Support.Point pnt)
         {
-            if (movingStart)
+            if (!vis)
             {
-                Set_Empty(startPoint.row, startPoint.col);
-                Set_Start(pnt.row, pnt.col);
-            }
-            else if (movingFinish)
-            {
-                Set_Empty(finishPoint.row, finishPoint.col);
-                Set_Finish(pnt.row, pnt.col);
+                if (movingStart)
+                {
+                    Set_Empty(startPoint.row, startPoint.col);
+                    Set_Start(pnt.row, pnt.col);
+                }
+                else if (movingFinish)
+                {
+                    Set_Empty(finishPoint.row, finishPoint.col);
+                    Set_Finish(pnt.row, pnt.col);
+                }
             }
             movingStart = movingFinish = false;
         }
@@ -209,14 +213,14 @@ namespace Path_finding
 
         public void Put_Wall(object sender, MouseEventArgs e = null)
         {
-            if (mouseDown)
+            if (mouseDown && !vis)
             {
                 Button clicked = (Button)sender;
                 Support.Point pnt = (Support.Point)clicked.CommandParameter;
 
                 Field field = fieldArray[pnt.row, pnt.col];
                 Button btn = btnArray[pnt.row, pnt.col];
-                if (field.distance != 0 && !field.finish)
+                if (!field.start && !field.finish)
                 {
                     if (field.wall == false)
                     {
@@ -236,131 +240,96 @@ namespace Path_finding
 
         // Algorithms
 
-        public void a_Star_Alg()
+        public void Best_First_Search_Alg()
         {
             Clear();
+
+            List<Field> fieldList = new List<Field>();
             foreach (Field field in fieldArray)
             {
+                field.prevField = null;
+                field.visited = false;
+                field.distance = int.MaxValue;
+                field.fDistance = 0;
 
+                if (field.finish) continue;
+
+                if (!field.wall)
+                    field.hDistance = field.point.Distance_To(finishPoint);
+                    fieldList.Add(field);
+
+                if (!field.wall && !field.start && !field.finish)
+                {
+                    btnArray[field.point.row, field.point.col].Background = Brushes.White;
+                }
             }
+
+            var fieldToVisit = new List<Field>(fieldList);
+
+            BestFirstSearch alg = new BestFirstSearch(fieldToVisit);
+            thr = new Thread(() => alg.Algorithm());
+            thr.Start();
+
 
         }
 
         public void Dijkstra_Alg()
         {
-            Buttons_Change_State(true); ;
             Clear();
             List<Field> fieldList = new List<Field>();
             foreach (Field field in fieldArray)
-            {               
+            {
+                field.prevField = null;
+                field.visited = false;
+
                 if (!field.wall)
+                    field.distance = field.start ? 0 : int.MaxValue;
                     fieldList.Add(field);
+
+                    
+                if (!field.wall && !field.start && !field.finish)
+                {
+                    btnArray[field.point.row, field.point.col].Background = Brushes.White;
+                }
             }
 
-            var asd = new List<Field>(fieldList);
+            var fieldToVisit = new List<Field>(fieldList);
 
-            alg = new Dijkstra(asd, btnArray);
-            Thread thr2 = new Thread(alg.Move);
-            thr2.Start();
-
-            vis = true;
-            Thread thr = new Thread(Visualisation_Proccess);
+            Dijkstra alg = new Dijkstra(fieldToVisit);
+            thr = new Thread(() => alg.Algorithm());
             thr.Start();
+
         }
 
         // Viusalisation methods
 
         private void Start_Vis(object sender, RoutedEventArgs e)
         {
+            Buttons_Change_State(true);
             switch (chosenAlg)
             {
                 case 1:
                     Dijkstra_Alg();
                     break;
                 case 2:
-                    a_Star_Alg();
+                    Best_First_Search_Alg();
                     break;
             }
         }
 
-        private void Stop_Vis(object sender, RoutedEventArgs e)
+        public void Stop_Vis(object sender = null, RoutedEventArgs e = null)
         {
             vis = false;
+            run = false;
+            Buttons_Change_State(false);
         }
 
         public void Clear()
         {
-            foreach (Field field in fieldArray)
-            {
-                if (thr != null)
-                    if (thr.IsAlive)
-                        thr.Abort();
-
-                if (thr2 != null)
-                    if (thr2.IsAlive)
-                        thr2.Abort();
-
-                field.Reset();
-            }
+            if (thr != null)
+                if (thr.IsAlive)
+                    thr.Abort();
         }
-
-        public void Show_Path(Field pathTrack)
-        {
-            Console.WriteLine(alg.pathTrack);
-            Button btn = btnArray[pathTrack.point.row, pathTrack.point.col];
-            if (pathTrack.start)
-            { 
-                btn.Background = Brushes.DodgerBlue;
-                return; 
-            }
-            else if (pathTrack.finish)
-                btn.Background = Brushes.Coral;
-            else
-                btn.Background = Brushes.Yellow;
-                       
-            if (pathTrack.prevField != null)
-                Show_Path(pathTrack.prevField);
-        }
-
-        public void Visualisation_Proccess()
-        {
-            while (vis)
-            {
-                if (alg.btnGreen.Count > 0)
-                {
-                    Dispatcher.Invoke(Show_Visited_Field);
-                }
-                else if (alg.run == false && alg.btnGreen.Count == 0)
-                {
-                    Thread.Sleep(100);
-                    vis = false;
-                    if (alg.pathTrack != null)
-                    {
-                        Dispatcher.Invoke(new Action<Field>((pT) => Show_Path(pT)), alg.pathTrack);
-                    }
-                }
-                Thread.Sleep(visSpeed);
-            }
-            Dispatcher.Invoke(new Action(() => Buttons_Change_State()));
-        }
-
-        public void Show_Visited_Field()
-        {
-            try
-            {
-                if (alg.btnGreen.Count != 0)
-                {
-                    Button btn = alg.btnGreen.Dequeue();
-                    btn.Background = Brushes.Green;
-                }
-            }
-            catch(Exception)
-            {
-                return;
-            }
-        }
-
-
 
         private void changeLevel(object sender, RoutedEventArgs e)
         {
@@ -392,8 +361,6 @@ namespace Path_finding
             }
         }
 
-
-
         private void Random_Maze(object sender, RoutedEventArgs e)
         {
             var rand = new Random();
@@ -422,14 +389,11 @@ namespace Path_finding
             int.TryParse((string)btn.CommandParameter, out newAlg);
             chosenAlg = newAlg != chosenAlg ? newAlg : chosenAlg;
         }
-
-
-
         // ASDASD
 
-        public void Buttons_Change_State(bool start = false)
+        public void Buttons_Change_State(bool algOn)
         {
-            if (start)
+            if (algOn)
             {
                 startBtn.Content = "Stop";
                 startBtn.Background = new SolidColorBrush(Color.FromRgb(185, 15, 15));
@@ -444,12 +408,12 @@ namespace Path_finding
                 startBtn.Click -= Stop_Vis;
             }
 
-            dijkstraButton.IsEnabled = !dijkstraButton.IsEnabled;
-            aStartButton.IsEnabled = !aStartButton.IsEnabled;
-            randomMazeBtn.IsEnabled = !randomMazeBtn.IsEnabled;
-            size1Btn.IsEnabled = !size1Btn.IsEnabled;
-            size2Btn.IsEnabled = !size2Btn.IsEnabled;
-            size3Btn.IsEnabled = !size3Btn.IsEnabled;
+            dijkstraButton.IsEnabled = !algOn;
+            BFSbutton.IsEnabled =      !algOn;
+            randomMazeBtn.IsEnabled =  !algOn;
+            size1Btn.IsEnabled =       !algOn;
+            size2Btn.IsEnabled =       !algOn;
+            size3Btn.IsEnabled =       !algOn;
         }
 
         private void SpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

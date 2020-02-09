@@ -15,10 +15,12 @@ namespace Path_finding
         public bool wall { get; set; }
 
         public List<Edge> edges;
+
         public int distance { get; set; }
         public Field prevField { get; set; }
 
         public double fDistance;
+        public double hDistance;
 
         public Button btn;
 

@@ -8,50 +8,36 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Threading;
 using System.Windows.Threading;
+using System.Windows;
 
 namespace Path_finding.Algorithms
 {
-    public class Dijkstra
+    public class Dijkstra : AlgorithmBase
     {
         List<Field> fieldList;
-        Button[,] btnArray;
-        public Field startField;
-        public bool finishFound = false;
 
-        public Field pathTrack;
-        public bool run;
-
-        public Queue<Button> btnGreen = new Queue<Button>();
-
-        public Point[] offset = new Point[] {
-                                                  new Point(-1, 0),
-                                new Point(0, -1),                 new Point(0, 1),
-                                                  new Point(1, 0)
-                                };
-
-        public Dijkstra(List<Field> fieldList, Button[,] btnArray)
+        public Dijkstra(List<Field> fieldList) : base()
         {
             this.fieldList = fieldList;
-            this.btnArray = btnArray;
         }
 
-        public void Move()
+        public override void Algorithm()
         {
-            run = true;
-            do
+            var thr = new Thread(Show_Visited_Field);
+            thr.Start();
+
+            mainWin.run = true;
+            while (mainWin.run)
             {
                 Field threadedField = fieldList.OrderBy(p => p.distance).First();
                 fieldList.Remove(threadedField);
 
+                
                 if (threadedField.distance == int.MaxValue)
                 {
-                    if (fieldList.Count > 0)
-                        continue;
-                    else
-                        pathTrack = null;
-                        run = false;
-                        break;
-                        
+                    pathTrack = null;
+                    mainWin.run = false;
+                    break;
                 }
 
                 if (!threadedField.wall)
@@ -60,7 +46,13 @@ namespace Path_finding.Algorithms
                     {
                         Field nextField = edge.nextField;
 
-                        if (!nextField.wall && !nextField.visited)
+                        if (nextField.finish)
+                        {
+                            nextField.prevField = threadedField;
+                            pathTrack = nextField;
+                            finishFound = true;
+                        }
+                        else if (!nextField.wall && !nextField.visited)
                         {
                             if (edge.distance + threadedField.distance < nextField.distance)
                             {
@@ -69,21 +61,17 @@ namespace Path_finding.Algorithms
                                 btnGreen.Enqueue(btnArray[nextField.point.row, nextField.point.col]);
                                 nextField.prevField = threadedField;
                             }
-                            if (nextField.finish)
-                            {
-                                pathTrack = nextField;
-                                break;
-                            }
                         }                        
                     }
                     if (fieldList.Count == 0 || pathTrack != null)
                     {
-                        run = false;
+                        mainWin.run = false;
                     }
                 }
-            } while (run);
-
+            }
         }
+
+
 
     }
 }
