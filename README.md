@@ -1,6 +1,7 @@
 # Pathfinding
 
-Work in progress :)
+### About
+Path finding algorithms visualisation
 
-### Short sample of app functionality
+### Preview
 [![Watch the video](https://img.youtube.com/vi/vaXeig1flB0/0.jpg)](https://www.youtube.com/watch?v=vaXeig1flB0&feature=youtu.be&fbclid=IwAR18P37dsL5ev9HP0NIMG2HNyDwlI-E9nWj_0LZZkwENPN8fPeGCkZTC02o)
